@@ -19,7 +19,11 @@ namespace StreamCompaction {
          */
         void scan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
-            // TODO
+            int running = 0;
+            for (int i = 0; i < n; ++i) {
+                odata[i] = running;
+                running += idata[i];
+            }
             timer().endCpuTimer();
         }
 
@@ -30,9 +34,14 @@ namespace StreamCompaction {
          */
         int compactWithoutScan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
-            // TODO
+            int count = 0;
+            for (int i = 0; i < n; ++i) {
+                if (idata[i] != 0) {
+                    odata[count++] = idata[i];
+                }
+            }
             timer().endCpuTimer();
-            return -1;
+            return count;
         }
 
         /**
@@ -41,10 +50,42 @@ namespace StreamCompaction {
          * @returns the number of elements remaining after compaction.
          */
         int compactWithScan(int n, int *odata, const int *idata) {
+            if (n <= 0) {
+                return 0;
+            }
+
+            int *bools = new int[n];
+            int *indices = new int[n];
+
             timer().startCpuTimer();
-            // TODO
+
+            // Map: 1 for elements to keep, 0 for elements to remove.
+            for (int i = 0; i < n; ++i) {
+                bools[i] = (idata[i] != 0) ? 1 : 0;
+            }
+
+            // Scan: exclusive prefix sum of the mapped array gives each
+            // surviving element its destination index.
+            int running = 0;
+            for (int i = 0; i < n; ++i) {
+                indices[i] = running;
+                running += bools[i];
+            }
+
+            int count = indices[n - 1] + bools[n - 1];
+
+            // Scatter: place each surviving element at its scanned index.
+            for (int i = 0; i < n; ++i) {
+                if (bools[i]) {
+                    odata[indices[i]] = idata[i];
+                }
+            }
+
             timer().endCpuTimer();
-            return -1;
+
+            delete[] bools;
+            delete[] indices;
+            return count;
         }
     }
 }
