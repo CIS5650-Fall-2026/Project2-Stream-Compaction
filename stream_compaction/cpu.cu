@@ -20,6 +20,17 @@ namespace StreamCompaction {
         void scan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
             // TODO
+
+            // Serial exclusive scan used as the CPU baseline
+            int sum = 0;
+
+            for (int i = 0; i < n; i++) {
+                odata[i] = sum;
+                sum += idata[i];
+            }
+
+
+
             timer().endCpuTimer();
         }
 
@@ -31,8 +42,19 @@ namespace StreamCompaction {
         int compactWithoutScan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
             // TODO
+
+            // We keep track of the next open position in the compacted array
+            int count = 0;
+
+            for (int i = 0; i < n; i++) {
+                if (idata[i] != 0) {
+                    odata[count] = idata[i];
+                    count++;
+                }
+            }
             timer().endCpuTimer();
-            return -1;
+            // return -1;
+            return count;
         }
 
         /**
@@ -43,8 +65,39 @@ namespace StreamCompaction {
         int compactWithScan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
             // TODO
+
+            int* bools = new int[n];
+            int* indices = new int[n];
+
+
+            // Map each input element to 1 to keep it, or 0 otherwise
+            for (int i = 0; i < n; i++) {
+                bools[i] = (idata[i] != 0) ? 1 : 0;
+            }
+
+
+            // Exclusive scan of the keep flags gives each element its output index
+            int sum = 0;
+            for (int i = 0; i < n; i++) {
+                indices[i] = sum;
+                sum += bools[i];
+            }
+
+
+            // Scatter each nonzero element to its position in the compacted array
+            for (int i = 0; i < n; i++) {
+                if (bools[i] == 1) {
+                    odata[indices[i]] = idata[i];
+                }
+            }
+
+
+
+            delete[] bools;
+            delete[] indices;
             timer().endCpuTimer();
-            return -1;
+            // return -1;
+            return sum;
         }
     }
 }
