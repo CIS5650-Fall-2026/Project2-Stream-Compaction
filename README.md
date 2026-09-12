@@ -76,6 +76,8 @@ Before collecting the final scaling results, I tested several CUDA block sizes f
 
 For both implementations, a block size of 64 produced the lowest median execution time, so I used 64 threads per block for the final naive and work-efficient scan benchmarks. Increasing the block size did not consistently improve performance. The work-efficient scan was faster than the naive scan for every block size I tested, although the exact timings varied between runs.
 
+The absolute naive-scan timings in this block-size sweep were higher than those in my later scaling benchmark, even at the same input size and block size. I observed substantial run-to-run timing variation during testing, so I used this sweep only to choose the block size based on the relative results within the same experiment rather than comparing its absolute timings directly with the later benchmark.
+
 
 
 ### Scan Performance
