@@ -112,7 +112,7 @@ The Nsight Systems timeline shows that the `thrust::exclusive_scan` call is surr
 
 ### Extra Credit: Work-Efficient Scan Optimization
 
-For the work-efficient scan, I reduced the amount of inactive work at deeper levels of the up-sweep and down-sweep. Instead of launching the same number of threads for every level of the tree, I calculate the amount of active work at each level and launch only the number of blocks needed for those elements. This reduces unnecessary thread and block launches as the amount of active work decreases toward the upper levels of the tree. I did not separately benchmark the optimized and unoptimized versions, so I do not claim a measured speedup from this change alone.
+For the work-efficient scan, I reduced the amount of inactive work at deeper levels of the up-sweep and down-sweep. In the straightforward implementation, the same grid size can be launched at every level even though the number of elements that actually participate decreases as the tree moves toward the root. This means that many launched threads have no useful work at the deeper levels of the scan. Instead, I calculate the amount of active work at each level and launch only the number of blocks needed for those elements. This reduces unnecessary thread and block launches as the amount of active work decreases. I did not separately benchmark the optimized and unoptimized versions, so I do not claim a measured speedup from this change alone.
 
 
 ### Extra Credit: Radix Sort
